@@ -20,7 +20,6 @@ type UserHandler interface {
 	GetUser(*gin.Context)
 	UpdateUser(*gin.Context)
 	DeleteUser(*gin.Context)
-	GetStaff(*gin.Context)
 }
 
 type userHandler struct {
@@ -39,6 +38,7 @@ func (uh *userHandler) CreateUser(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest, gin.H{
 			"error": err.Error(),
 		})
+		return
 	}
 	user.Password = hashPassword(user.Password)
 	user, err := uh.repo.AddUser(user)
@@ -46,6 +46,7 @@ func (uh *userHandler) CreateUser(ctx *gin.Context) {
 		ctx.JSON(http.StatusInternalServerError, gin.H{
 			"error": err.Error(),
 		})
+		return
 	}
 
 	ctx.JSON(http.StatusCreated, gin.H{
@@ -134,10 +135,6 @@ func (uh *userHandler) DeleteUser(ctx *gin.Context) {
 		return
 	}
 	ctx.JSON(http.StatusOK, gin.H{"msg": "user deleted"})
-}
-
-func (uh *userHandler) GetStaff(ctx *gin.Context) {
-
 }
 
 func hashPassword(password string) string {

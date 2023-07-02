@@ -9,7 +9,5 @@ type UserRepository interface {
 	GetAllUser() ([]model.User, error)
 	UpdateUser(model.User) (model.User, error)
 	DeleteUser(model.User) error
-	GetUserStaff(uint) ([]model.Staff, error)
-	GetUserVisitors(uint) ([]model.Visitor, error)
 	CountUsers() int
 }

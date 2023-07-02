@@ -1,2 +1,2 @@
 dev:
-	gin --appPort 8080 -i run main.go
+	gin --appPort 4000 -i run main.go

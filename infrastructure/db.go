@@ -30,12 +30,12 @@ func DB() *gorm.DB {
 		log.Fatalf("invalid driver: %s", os.Getenv("DB_DRIVER"))
 	}
 
-	db, err := gorm.Open(dialect, &gorm.Config{})
+	db, err := gorm.Open(dialect, &gorm.Config{TranslateError: true})
 	if err != nil {
 		log.Fatalf("Error connecting to database (%v)(%v): %v", dialect.Name(), dsn, err)
 		return nil
 	}
 
-	db.AutoMigrate(&model.User{}, &model.Staff{}, &model.Visitor{})
+	db.AutoMigrate(&model.User{}, &model.Course{}, &model.Quiz{}, &model.Grade{})
 	return db
 }
