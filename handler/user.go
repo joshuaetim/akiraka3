@@ -18,6 +18,7 @@ type UserHandler interface {
 	CreateUser(*gin.Context)
 	SignInUser(*gin.Context)
 	GetUser(*gin.Context)
+	GetCurrentUser(*gin.Context)
 	UpdateUser(*gin.Context)
 	DeleteUser(*gin.Context)
 }
@@ -135,6 +136,21 @@ func (uh *userHandler) DeleteUser(ctx *gin.Context) {
 		return
 	}
 	ctx.JSON(http.StatusOK, gin.H{"msg": "user deleted"})
+}
+
+func (uh *userHandler) GetCurrentUser(ctx *gin.Context) {
+	userId := ctx.GetFloat64("userID")
+	fmt.Println(userId)
+	user, err := uh.repo.GetUser(uint(userId))
+	if err != nil {
+		ctx.JSON(http.StatusUnauthorized, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+	ctx.JSON(http.StatusOK, gin.H{
+		"data": user,
+	})
 }
 
 func hashPassword(password string) string {

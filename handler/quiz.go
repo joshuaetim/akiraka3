@@ -57,7 +57,7 @@ func (qh *quizHandler) ViewQuiz(ctx *gin.Context) {
 		return
 	}
 	ctx.JSON(http.StatusOK, gin.H{
-		"data": quiz,
+		"data": quiz.PublicQuiz(),
 	})
 }
 
@@ -104,6 +104,13 @@ const SEP = "===SEP==="
 func (qh *quizHandler) AddQuiz(ctx *gin.Context) {
 	// get csv data
 	file, _, _ := ctx.Request.FormFile("file")
+
+	title := ctx.Request.FormValue("title")
+	duration, _ := strconv.Atoi(ctx.Request.FormValue("duration"))
+	if duration == 0 {
+		return
+	}
+
 	csvReader := csv.NewReader(file)
 
 	var questions []string
@@ -150,6 +157,8 @@ func (qh *quizHandler) AddQuiz(ctx *gin.Context) {
 		Options:   optionsCSV,
 		Course:    uint(courseId),
 		Staff:     uint(staffId),
+		Title:     title,
+		Duration:  duration,
 	}
 	_, err := qh.repo.AddQuiz(quiz)
 	if err != nil {
@@ -172,8 +181,9 @@ func (qh *quizHandler) GetAllQuiz(ctx *gin.Context) {
 		})
 		return
 	}
+	publicQuizzes := new(model.Quiz).PublicQuizArray(quizzes)
 	ctx.JSON(http.StatusOK, gin.H{
-		"data": quizzes,
+		"data": publicQuizzes,
 	})
 }
 

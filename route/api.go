@@ -30,6 +30,7 @@ func RunAPI(address string) error {
 	userHandler := handler.NewUserHandler(db)
 	quizHandler := handler.NewQuizHandler(db)
 	courseHandler := handler.NewCourseHandler(db)
+	gradeHandler := handler.NewGradeHandler(db)
 	dashboardHandler := handler.NewDashboardHandler(db)
 
 	r := gin.Default()
@@ -49,6 +50,7 @@ func RunAPI(address string) error {
 	userProtectedRoutes := apiRoutes.Group("/user", middleware.AuthorizeJWT())
 	userProtectedRoutes.GET("/:id", userHandler.GetUser)
 	userProtectedRoutes.PUT("/", userHandler.UpdateUser)
+	userProtectedRoutes.GET("/", userHandler.GetCurrentUser)
 
 	quizRoutes := apiRoutes.Group("/quiz", middleware.AuthorizeJWT())
 	quizRoutes.GET("/", quizHandler.GetAllQuiz)
@@ -57,6 +59,12 @@ func RunAPI(address string) error {
 	quizRoutes.GET("/staff", quizHandler.GetQuizByStaff)
 	quizRoutes.POST("/:quiz/submit", quizHandler.GradeQuiz)
 	quizRoutes.DELETE("/:id", quizHandler.DeleteQuiz)
+
+	gradeRoutes := apiRoutes.Group("/grade", middleware.AuthorizeJWT())
+	gradeRoutes.GET("/", gradeHandler.GetGrades)
+	gradeRoutes.GET("/:id", gradeHandler.GetGrade)
+	gradeRoutes.GET("/quiz/:quiz", gradeHandler.GetGradesByQuiz)
+	gradeRoutes.DELETE("/:id", gradeHandler.DeleteGrade)
 
 	courseRoutes := apiRoutes.Group("/courses", middleware.AuthorizeJWT())
 	courseRoutes.POST("/", courseHandler.AddCourse)
