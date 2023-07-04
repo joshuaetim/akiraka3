@@ -5,7 +5,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/joshuaetim/frontdesk/infrastructure"
+	"github.com/joshuaetim/akiraka3/infrastructure"
 )
 
 type JsonReq struct {

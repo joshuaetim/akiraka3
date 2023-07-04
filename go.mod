@@ -1,4 +1,4 @@
-module github.com/joshuaetim/frontdesk
+module github.com/joshuaetim/akiraka3
 
 go 1.17
 

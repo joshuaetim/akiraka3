@@ -13,9 +13,9 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/joshuaetim/frontdesk/domain/model"
-	"github.com/joshuaetim/frontdesk/domain/repository"
-	"github.com/joshuaetim/frontdesk/infrastructure"
+	"github.com/joshuaetim/akiraka3/domain/model"
+	"github.com/joshuaetim/akiraka3/domain/repository"
+	"github.com/joshuaetim/akiraka3/infrastructure"
 	"gorm.io/gorm"
 )
 

@@ -4,9 +4,9 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/joshuaetim/frontdesk/handler"
-	"github.com/joshuaetim/frontdesk/infrastructure"
-	"github.com/joshuaetim/frontdesk/middleware"
+	"github.com/joshuaetim/akiraka3/handler"
+	"github.com/joshuaetim/akiraka3/infrastructure"
+	"github.com/joshuaetim/akiraka3/middleware"
 )
 
 func CORSMiddleware() gin.HandlerFunc {

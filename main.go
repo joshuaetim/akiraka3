@@ -4,7 +4,7 @@ import (
 	"log"
 
 	"github.com/joho/godotenv"
-	"github.com/joshuaetim/frontdesk/route"
+	"github.com/joshuaetim/akiraka3/route"
 )
 
 func main() {

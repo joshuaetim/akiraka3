@@ -1,6 +1,6 @@
 package repository
 
-import "github.com/joshuaetim/frontdesk/domain/model"
+import "github.com/joshuaetim/akiraka3/domain/model"
 
 type CourseRepository interface {
 	AddCourse(model.Course) (model.Course, error)

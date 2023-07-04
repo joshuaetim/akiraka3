@@ -5,7 +5,7 @@ import (
 	"log"
 	"os"
 
-	"github.com/joshuaetim/frontdesk/domain/model"
+	"github.com/joshuaetim/akiraka3/domain/model"
 	"gorm.io/driver/mysql"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"

@@ -6,7 +6,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt"
-	"github.com/joshuaetim/frontdesk/handler"
+	"github.com/joshuaetim/akiraka3/handler"
 )
 
 func AuthorizeJWT() gin.HandlerFunc {

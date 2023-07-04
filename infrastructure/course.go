@@ -1,8 +1,8 @@
 package infrastructure
 
 import (
-	"github.com/joshuaetim/frontdesk/domain/model"
-	"github.com/joshuaetim/frontdesk/domain/repository"
+	"github.com/joshuaetim/akiraka3/domain/model"
+	"github.com/joshuaetim/akiraka3/domain/repository"
 	"gorm.io/gorm"
 )
 

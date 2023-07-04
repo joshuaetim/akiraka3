@@ -2,8 +2,8 @@ package factory
 
 import (
 	"github.com/brianvoe/gofakeit/v6"
-	"github.com/joshuaetim/frontdesk/domain/model"
-	"github.com/joshuaetim/frontdesk/infrastructure"
+	"github.com/joshuaetim/akiraka3/domain/model"
+	"github.com/joshuaetim/akiraka3/infrastructure"
 	"gorm.io/gorm"
 )
 

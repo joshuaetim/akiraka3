@@ -1,6 +1,6 @@
 package repository
 
-import "github.com/joshuaetim/frontdesk/domain/model"
+import "github.com/joshuaetim/akiraka3/domain/model"
 
 type GradeRepository interface {
 	AddGrade(model.Grade) error
