@@ -2,6 +2,7 @@ package main
 
 import (
 	"log"
+	"os"
 
 	"github.com/joho/godotenv"
 	"github.com/joshuaetim/akiraka3/route"
@@ -12,5 +13,5 @@ func main() {
 	if err != nil {
 		log.Println(err)
 	}
-	log.Fatal(route.RunAPI(":4000"))
+	log.Fatal(route.RunAPI(":" + os.Getenv("PORT")))
 }
