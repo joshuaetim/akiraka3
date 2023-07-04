@@ -4,6 +4,7 @@ import (
 	"encoding/csv"
 	"fmt"
 	"io"
+	"math"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -27,18 +28,26 @@ type QuizHandler interface {
 	// GetQuiz(*gin.Context)
 	GetQuizByStaff(*gin.Context)
 	GradeQuiz(*gin.Context)
+	UpdateQuiz(*gin.Context)
 }
 
 type quizHandler struct {
 	repo      repository.QuizRepository
 	gradeRepo repository.GradeRepository
+	userRepo  repository.UserRepository
 }
 
 func NewQuizHandler(db *gorm.DB) QuizHandler {
 	return &quizHandler{
 		repo:      infrastructure.NewQuizRepository(db),
 		gradeRepo: infrastructure.NewGradeRepository(db),
+		userRepo:  infrastructure.NewUserRepository(db),
 	}
+}
+
+type gradeRes struct {
+	Grade model.Grade `json:"grade"`
+	User  model.User  `json:"user"`
 }
 
 func (qh *quizHandler) ViewQuiz(ctx *gin.Context) {
@@ -56,8 +65,44 @@ func (qh *quizHandler) ViewQuiz(ctx *gin.Context) {
 		})
 		return
 	}
+	// check staff
+	userId := ctx.GetFloat64("userID")
+	user, err := qh.userRepo.GetUser(uint(userId))
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+	var gradeResArray []gradeRes
+	if user.Role == "teacher" {
+		grades, err := qh.gradeRepo.GetGradesByMap(map[string]interface{}{"quiz": uint(id)})
+		if err != nil {
+			ctx.JSON(http.StatusBadRequest, gin.H{
+				"error": err.Error(),
+			})
+			return
+		}
+		for _, grade := range grades {
+			user, err := qh.userRepo.GetUser(grade.User)
+			if err != nil {
+				continue
+			}
+			res := gradeRes{Grade: grade, User: *user.PublicUser()}
+			gradeResArray = append(gradeResArray, res)
+		}
+	}
+	var doneFlag bool
+	if user.Role == "student" {
+		grade, _ := qh.gradeRepo.GetGradesByMap(map[string]interface{}{"user": user.ID, "quiz": quiz.ID})
+		if len(grade) > 0 {
+			doneFlag = true
+		}
+	}
 	ctx.JSON(http.StatusOK, gin.H{
-		"data": quiz.PublicQuiz(),
+		"quiz":   quiz.PublicQuiz(),
+		"grades": gradeResArray,
+		"done":   doneFlag,
 	})
 }
 
@@ -206,7 +251,7 @@ func (qh *quizHandler) DeleteQuiz(ctx *gin.Context) {
 
 func (qh *quizHandler) GetQuizByStaff(ctx *gin.Context) {
 	uID := ctx.GetFloat64("userID")
-	quizzes, err := qh.repo.GetQuizzesByStaff(uint(uID))
+	quizzes, err := qh.repo.GetQuizzesByMap(map[string]interface{}{"staff": uint(uID)})
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{
 			"error": err.Error(),
@@ -256,9 +301,11 @@ func (qh *quizHandler) GradeQuiz(ctx *gin.Context) {
 			score++
 		}
 	}
+	scorePercent := (float64(score) / float64(len(actualAnswers))) * 100
+	scorePercent = math.Round(scorePercent*100) / 100
 	grade := model.Grade{
 		Quiz:  quiz.ID,
-		Score: score,
+		Score: scorePercent,
 		User:  uint(userId),
 	}
 	err = qh.gradeRepo.AddGrade(grade)
@@ -271,5 +318,28 @@ func (qh *quizHandler) GradeQuiz(ctx *gin.Context) {
 	}
 	ctx.JSON(http.StatusOK, gin.H{
 		"data": "graded successfully",
+	})
+}
+
+func (qh *quizHandler) UpdateQuiz(ctx *gin.Context) {
+	id, _ := strconv.Atoi(ctx.Param("id"))
+	quiz := model.Quiz{}
+	if err := ctx.ShouldBindJSON(&quiz); err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+	quiz.ID = uint(id)
+
+	_, err := qh.repo.UpdateQuiz(quiz)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+	ctx.JSON(http.StatusOK, gin.H{
+		"data": "updated successfully",
 	})
 }

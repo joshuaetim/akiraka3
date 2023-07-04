@@ -21,12 +21,14 @@ type CourseHandler interface {
 }
 
 type courseHandler struct {
-	repo repository.CourseRepository
+	repo     repository.CourseRepository
+	quizRepo repository.QuizRepository
 }
 
 func NewCourseHandler(db *gorm.DB) CourseHandler {
 	return &courseHandler{
-		repo: infrastructure.NewCourseRepository(db),
+		repo:     infrastructure.NewCourseRepository(db),
+		quizRepo: infrastructure.NewQuizRepository(db),
 	}
 }
 
@@ -38,6 +40,7 @@ func (ch *courseHandler) AddCourse(ctx *gin.Context) {
 		})
 		return
 	}
+	course.Staff = uint(ctx.GetFloat64("userID"))
 	c, err := ch.repo.AddCourse(course)
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{
@@ -59,13 +62,22 @@ func (ch *courseHandler) ViewCourse(ctx *gin.Context) {
 		})
 		return
 	}
+	staffId := ctx.GetFloat64("userID")
+	quizzes, _ := ch.quizRepo.GetQuizzesByMap(map[string]interface{}{"staff": uint(staffId), "course": uint(course.ID)})
+	quizzes = new(model.Quiz).PublicQuizArray(quizzes)
 	ctx.JSON(http.StatusOK, gin.H{
-		"data": course,
+		"course":  course,
+		"quizzes": quizzes,
 	})
 }
 
+type courseAndQuizRes struct {
+	Course model.Course `json:"course"`
+	Quiz   []model.Quiz `json:"quiz"`
+}
+
 func (ch *courseHandler) GetCoursesByStaff(ctx *gin.Context) {
-	staffId, _ := strconv.Atoi(ctx.Param("staffid"))
+	staffId := ctx.GetFloat64("userID")
 	courses, err := ch.repo.GetAllCoursesByStaff(uint(staffId))
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{
@@ -73,8 +85,20 @@ func (ch *courseHandler) GetCoursesByStaff(ctx *gin.Context) {
 		})
 		return
 	}
+	var res []courseAndQuizRes
+	for _, course := range courses {
+		quiz, err := ch.quizRepo.GetQuizzesByMap(map[string]interface{}{"staff": uint(staffId), "course": uint(course.ID)})
+		if err != nil {
+			continue
+		}
+		quiz = new(model.Quiz).PublicQuizArray(quiz)
+		res = append(res, courseAndQuizRes{
+			Course: course,
+			Quiz:   quiz,
+		})
+	}
 	ctx.JSON(http.StatusOK, gin.H{
-		"data": courses,
+		"data": res,
 	})
 }
 
@@ -125,7 +149,7 @@ func (ch *courseHandler) DeleteCourse(ctx *gin.Context) {
 		})
 		return
 	}
-	ctx.JSON(http.StatusInternalServerError, gin.H{
+	ctx.JSON(http.StatusOK, gin.H{
 		"data": "successfully deleted",
 	})
 }

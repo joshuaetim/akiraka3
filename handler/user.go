@@ -21,6 +21,7 @@ type UserHandler interface {
 	GetCurrentUser(*gin.Context)
 	UpdateUser(*gin.Context)
 	DeleteUser(*gin.Context)
+	GetUsers(*gin.Context)
 }
 
 type userHandler struct {
@@ -149,7 +150,20 @@ func (uh *userHandler) GetCurrentUser(ctx *gin.Context) {
 		return
 	}
 	ctx.JSON(http.StatusOK, gin.H{
-		"data": user,
+		"user": user.PublicUser(),
+	})
+}
+
+func (uh *userHandler) GetUsers(ctx *gin.Context) {
+	users, err := uh.repo.GetAllUser()
+	if err != nil {
+		ctx.JSON(http.StatusUnauthorized, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+	ctx.JSON(http.StatusOK, gin.H{
+		"data": users,
 	})
 }
 

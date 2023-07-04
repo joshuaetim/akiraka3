@@ -14,7 +14,7 @@ func CORSMiddleware() gin.HandlerFunc {
 		c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
 		c.Writer.Header().Set("Access-Control-Allow-Credentials", "true")
 		c.Writer.Header().Set("Access-Control-Allow-Headers", "Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization, accept, origin, Cache-Control, X-Requested-With")
-		c.Writer.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS, GET, PUT")
+		c.Writer.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS, GET, PUT, DELETE, PATCH")
 
 		if c.Request.Method == "OPTIONS" {
 			c.AbortWithStatus(204)
@@ -47,6 +47,8 @@ func RunAPI(address string) error {
 	userRoutes.POST("/register", userHandler.CreateUser)
 	userRoutes.POST("/login", userHandler.SignInUser)
 
+	apiRoutes.GET("/users", middleware.AuthorizeJWT(), userHandler.GetUsers)
+
 	userProtectedRoutes := apiRoutes.Group("/user", middleware.AuthorizeJWT())
 	userProtectedRoutes.GET("/:id", userHandler.GetUser)
 	userProtectedRoutes.PUT("/", userHandler.UpdateUser)
@@ -58,12 +60,14 @@ func RunAPI(address string) error {
 	quizRoutes.GET("/:id", quizHandler.ViewQuiz)
 	quizRoutes.GET("/staff", quizHandler.GetQuizByStaff)
 	quizRoutes.POST("/:quiz/submit", quizHandler.GradeQuiz)
+	quizRoutes.PATCH("/:id", quizHandler.UpdateQuiz)
 	quizRoutes.DELETE("/:id", quizHandler.DeleteQuiz)
 
 	gradeRoutes := apiRoutes.Group("/grade", middleware.AuthorizeJWT())
 	gradeRoutes.GET("/", gradeHandler.GetGrades)
 	gradeRoutes.GET("/:id", gradeHandler.GetGrade)
 	gradeRoutes.GET("/quiz/:quiz", gradeHandler.GetGradesByQuiz)
+	gradeRoutes.GET("/user/", gradeHandler.GetGradesByUser)
 	gradeRoutes.DELETE("/:id", gradeHandler.DeleteGrade)
 
 	courseRoutes := apiRoutes.Group("/courses", middleware.AuthorizeJWT())
@@ -72,7 +76,7 @@ func RunAPI(address string) error {
 	courseRoutes.GET("/:id", courseHandler.ViewCourse)
 	courseRoutes.PUT("/:id", courseHandler.UpdateCourse)
 	courseRoutes.DELETE("/:id", courseHandler.DeleteCourse)
-	courseRoutes.GET("/staff/:staffid", courseHandler.GetCoursesByStaff)
+	courseRoutes.GET("/staff", courseHandler.GetCoursesByStaff)
 
 	dashboardRoutes := apiRoutes.Group("/dashboard", middleware.AuthorizeJWT())
 	dashboardRoutes.GET("/users/count", dashboardHandler.GetUsersCount)

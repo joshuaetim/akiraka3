@@ -1,6 +1,8 @@
 package infrastructure
 
 import (
+	"fmt"
+
 	"github.com/joshuaetim/frontdesk/domain/model"
 	"github.com/joshuaetim/frontdesk/domain/repository"
 	"gorm.io/gorm"
@@ -46,4 +48,28 @@ func (r *gradeRepo) UpdateGrade(grade model.Grade) (model.Grade, error) {
 
 func (r *gradeRepo) DeleteGrade(grade model.Grade) error {
 	return r.db.Delete(&grade).Error
+}
+
+func (r *gradeRepo) GetByUser(id uint) ([]model.Grade, error) {
+	var grades []model.Grade
+	return grades, r.db.Find(&grades, "user = ?", id).Error
+}
+
+func (r *gradeRepo) GetGradesByMap(query map[string]interface{}) ([]model.Grade, error) {
+	var queryString string
+	var fields []interface{}
+	var grade []model.Grade
+	for k, v := range query {
+		if queryString != "" {
+			queryString = " " + queryString + " AND "
+		}
+		queryString = fmt.Sprintf("%s%s = ?", queryString, k)
+		fields = append(fields, v)
+	}
+	// fields[0]
+	var queryMain []interface{}
+	queryMain = append(queryMain, queryString)
+	queryMain = append(queryMain, fields...)
+
+	return grade, r.db.Find(&grade, queryMain...).Error
 }
